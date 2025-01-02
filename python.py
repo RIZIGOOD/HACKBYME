@@ -1,13 +1,36 @@
-from flask import Flask
+from flask import Flask, request
 import webbrowser
 import threading
 import time
 import atexit
+import logging
 
 app = Flask(__name__)
 
+# Налаштування логування для запису в файл
+logging.basicConfig(filename='access_logs.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
+
 @app.route('/')
 def index():
+    # Отримуємо інформацію про запит
+    ip_address = request.remote_addr  # IP адреса користувача
+    user_agent = request.headers.get('User-Agent')  # Інформація про браузер
+    browser_info = "Unknown Browser"
+
+    if "Chrome" in user_agent:
+        browser_info = "Chrome"
+    elif "Firefox" in user_agent:
+        browser_info = "Firefox"
+    elif "Safari" in user_agent:
+        browser_info = "Safari"
+    
+    # Логування в файл
+    log_message = f"IP Address: {ip_address}, Browser: {browser_info}, User-Agent: {user_agent}"
+    logging.info(log_message)
+    
+    # Виводимо інформацію в консоль
+    print(f"Visit Information:\n\nIP Address: {ip_address}\nBrowser: {browser_info}\nUser-Agent: {user_agent}")
+
     return """
     <html>
     <head>
@@ -133,4 +156,3 @@ if __name__ == '__main__':
     threading.Timer(1, open_browser).start()
     app.run(debug=True)
     atexit.register(lambda: time.sleep(5))  # Wait for threads to complete before closing
-
